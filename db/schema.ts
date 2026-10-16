@@ -1,3 +1,4 @@
+export * from './network-schema';
 import { sqliteTable, text, integer, primaryKey, uniqueIndex, index } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 export * from './agent-schema';

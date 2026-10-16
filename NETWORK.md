@@ -1,0 +1,29 @@
+# Network implementation and activation
+
+The directory now uses a visual name blur. This is presentation only; names remain in the browser response. Email/phone access stays server-controlled.
+
+## Two independent ratings
+
+Overall is the site's **portfolio strength** score, not an official quality ranking or customer satisfaction score. Verified inputs in `lib/directory-portfolios.server.json` are keyed by internal directory ID and contain required players and marketValueEur, optional topTierPlayers, sourceName, sourceUrl, checkedAt (UTC ISO), verified:true. The source must be matched to the correct entity by an administrator before entry. Eight agency records now contain manually matched historical Transfermarkt search-index snapshots. They display Historical beside Overall and disclose that current figures are unconfirmed. They are not a live feed; original update dates are unknown. checkedAt is the retrieval/review timestamp, not a claim that the underlying figures were updated then. Other records remain unscored.
+
+Formula v3: min(5, clamp(floor(totalValueEUR / 8m) / 2, 1, 5) + floor(players / 15) × 0.5). Each complete group of 15 players adds half a star to the previous value-based score. For example, €32m with 30 players earns 3 stars; €64m with 30 players earns 5. €80m+ remains 5 stars. Both verified total value and player count are required; missing data remains unrated. Inputs expire after 90 days. Market estimates and portfolio scale are explicitly proxies; general fame is not measured. An optional PORTFOLIO_FEED_URL adapter accepts {records:[{entityId, ...portfolio fields}]}, refreshes on demand at most every five minutes and requires HTTPS, bounded responses, exact entity matches and verified records. PORTFOLIO_FEED_TOKEN supplies an optional Bearer credential. No provider is configured locally. The authorised upstream adapter must maintain entity mappings and source verification; do not label the current empty dataset live. Pricing remains unchanged by these new scores.
+
+Community reviews are stored separately. A signed-in member with an unlocked contact may leave one editable 1–5 star review and comment; reviewers attest to personal dealings. Unlocking does not prove a transaction. Aggregates exclude moderated reviews. Authors can delete reviews; users can report abuse. Approved listing owners cannot review themselves. Administrators must map an official claim to its directory destination to enforce this check.
+
+## Accounts and chat
+
+`/network` offers player, agent and agency profiles with complementary-role discovery. Public visibility is opt-in. Date of birth is private. Players must be 16+; professional representatives 18+. Under-18 discovery, chat, reviews, contact unlocks, new purchases and introductions require approved guardian consent. A signed consent image plus guardian contact details are submitted privately and manually checked by administrators. A checkbox alone never activates a minor. Supabase must have Confirm Email enabled; password policy should also be configured at the provider, which can otherwise be called directly. App password validation is 12–128 characters including letters and a non-letter, with matching confirmation.
+
+Official professional verification, optional photo/ID verification and guardian consent have separate statuses. Users cannot set these statuses themselves. Server-side tables, not editable auth metadata, govern access. Identity/role corrections go through support and require rechecking; no self-service mutation of verified identity.
+
+Chat messages are private to thread members, with server-side checks on every read/write. Agents/agencies require approved professional claims. Both participants require an active separate chat entitlement to send. `/admin/network` can grant a trial with an expiry; there is no payment checkout or price yet. New threads require a listed recipient and different roles. Block/report controls are available. The client polls every three seconds while visible; this is persisted near-live messaging, not a WebSocket service. No chat email notifications or attachments are sent. Existing email introductions remain available as a separate player feature.
+
+## Private documents and review operations
+
+Set VERIFICATION_ENCRYPTION_KEY to a securely generated 32-byte key encoded as 64 hexadecimal characters. Keep it out of source control and back it up securely. With no key, photo/ID uploads fail closed. JPEG/PNG inputs are bounded to 5 MB each, decoded and re-encoded with metadata removed, then encrypted using AES-256-GCM with storage-key authenticated data. Never use public storage for verification files.
+
+Owner and admin download endpoints enforce authorization and no-store responses. `/admin/network` requires the existing trusted `touchline_is_admin` RPC. Admin document reads, decisions, moderation and entitlement changes are audited. Reviewers must independently confirm professional records/representation, or the guardian's identity, relationship and specific consent. This is manual review, not automated KYC or biometric verification. A badge is evidence of a completed check, not a guarantee.
+
+Images are deleted when reviewed or withdrawn. Minimise review notes: never transcribe ID numbers. Pending evidence needs an operational review/retention schedule before production; no background cleanup scheduler is provisioned in this change. Support handles account corrections/deletion, including retained message/review records and backups. Encryption does not replace operational access controls.
+
+SQLite migration 0007 is applied by the existing Node storage runner. Production needs persistent storage and a single compatible application database deployment. Authenticated multi-account UI testing requires configured Supabase credentials; unauthenticated builds and in-memory service tests do not establish production readiness.

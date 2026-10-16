@@ -5,7 +5,7 @@ export const dynamic='force-dynamic';
 export default function FAQ(){return <PolicyShell title="Your questions, answered.">{[
 ['Is registration free?','Yes. Register with Google or your email and a password. Email registration does not require a confirmation email.'],
 ['Do I need to complete my player profile before buying credits?','No. Once signed in, you can buy contact or introduction credits immediately and reveal purchased contacts. Complete and save your player profile before sending an introduction.'],
-['What are contact unlocks?','One contact credit reveals the published email address and any available phone for one agent or agency. Revealed contacts remain available in your account.'],
+['What are contact unlocks?','The credit price shown on a listing reveals its name, email and any available phone. Contacts currently cost 1 credit. Overall and community reviews do not change this price. Revealed contacts remain available in your account.'],
 ['What is a player introduction?','TOUCHLINE Radar sends your saved player profile and all uploaded PDFs to a selected agent or agency. Each introduction costs $0.50 USD, using a separate introduction-credit balance. Replies go to your registered email.'],
 ['Can I send again to the same agency?','One successful introduction per player to each recorded agency destination is allowed. Associated agent records may share the same destination.'],
 ['How do contact bundles work?','Buy 5 credits for $2.50, 20 for $9, 50 for $20 or 100 for $35 USD. Larger contact bundles show savings of 10%, 20% or 30%. Introduction credits cost $0.50 each without a bundle discount.'],

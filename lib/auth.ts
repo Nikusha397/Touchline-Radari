@@ -22,7 +22,7 @@ export async function getAuthUser() {
     // Remote verification also checks that the user still exists. Never trust getSession alone.
     const {data,error}=await client.auth.getUser();
     const user=data?.user;
-    if(error||!user?.email)return null;
+    if(error||!user?.email||!user.email_confirmed_at)return null;
     return {userId:user.id,email:user.email,displayName:String(user.user_metadata?.full_name||user.email.split('@')[0]).slice(0,80)};
   } catch { return null; }
 }

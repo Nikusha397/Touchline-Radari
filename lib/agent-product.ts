@@ -15,6 +15,11 @@ export const introductionBundles=[1,5,20,50,100].map(credits=>({credits,cents:cr
 export type CreditPurpose='unlock'|'introduction';
 
 export type Recipient = {
+  community?: {count:number;average:number|null};
+  overall?: {score:number;players?:number;topTierPlayers?:number;marketValueEur:number;sourceName:string;sourceUrl:string;checkedAt:string;methodology:string;sourceMode?:'direct'|'indexed_snapshot';sourceNote?:string}|null;
+  identityUnlocked?: boolean;
+  unlockCredits?: number;
+  rating?: { score: number; reviewCount: number; sourceName: string; checkedAt: string; sourceUrl?: string } | null;
 
   id: string; kind: "agency" | "agent"; name: string; country: string; countryCode: string;
 

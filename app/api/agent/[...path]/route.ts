@@ -1,3 +1,10 @@
+import {sortByOverall} from '../../../../lib/directory-sort';
+import {withLivePortfolios} from '../../../../lib/portfolio-feed.server';
+import {withCommunitySummary} from '../../../../lib/community-summary.server';
+import {profile as networkProfile} from '../../../../lib/network-service';
+import {guardianCleared} from '../../../../lib/network-policy';
+import { publicDestination, publicId } from '../../../../lib/directory-catalog.server';
+import { getAuthUser } from '../../../../lib/auth';
 import {createAgentCheckout,captureAgentPayPal,agentPaymentsReady} from '../../../../lib/agent-payments';
 import {bodyBytes,rateLimit,RequestTooLarge} from '../../../../lib/security';
 import {isAdministrator} from '../../../../lib/admin';
@@ -15,7 +22,10 @@ async function handle(req:Request,ctx:Context){try{
   if(path==='directory'&&req.method==='GET'){
     if(!await rateLimit(req,'agent-directory-minute',90,60)||!await rateLimit(req,'agent-directory-hour',1500,3600))throw new Problem(429,'Please slow down and try again shortly.');
 
-    const kind=url.searchParams.get('kind')==='agent'?'agent':'agency';const all=entries.filter(x=>x.kind===kind);
+    const viewer=await getAuthUser();
+    const rights=viewer&&await balance(viewer.userId)>=0 ? await db().prepare('SELECT recipient_id FROM agent_unlocks WHERE user_id=?').bind(viewer.userId).all<{recipient_id:string}>() : {results:[]};
+    const unlockedKeys=new Set(rights.results.map(x=>x.recipient_id));
+    const kind=url.searchParams.get('kind')==='agent'?'agent':'agency';const all=entries.filter(x=>x.kind===kind).map(x=>publicRecipient(x,unlockedKeys.has(x.destinationKey)));
 
     const countries=Array.from(new Set(all.map(x=>x.country))).sort((a,b)=>a==='Unknown'?1:b==='Unknown'?-1:a.localeCompare(b));
 
@@ -26,7 +36,8 @@ async function handle(req:Request,ctx:Context){try{
 
     const page=Math.max(1,Math.min(1000,Math.floor(Number(url.searchParams.get('page'))||1)));
 
-    return json({items:filtered.slice((page-1)*18,page*18).map(publicRecipient),total:filtered.length,countries,page,pages:Math.ceil(filtered.length/18),agencyCount:entries.filter(x=>x.kind==='agency').length,agentCount:entries.filter(x=>x.kind==='agent').length});
+    const ranked=sortByOverall(await withLivePortfolios(filtered));
+    return json({items:withCommunitySummary(ranked.slice((page-1)*18,page*18)),total:filtered.length,countries,page,pages:Math.ceil(filtered.length/18),agencyCount:entries.filter(x=>x.kind==='agency').length,agentCount:entries.filter(x=>x.kind==='agent').length});
 
   }
 
@@ -42,7 +53,7 @@ async function handle(req:Request,ctx:Context){try{
 
     const [p,credits,introCredits,files,unlocked,activity,pendingOrders]=await Promise.all([profile(u.userId),balance(u.userId),balance(u.userId,'introduction'),db().prepare("SELECT id,name,bytes,created_at FROM agent_files WHERE user_id=? ORDER BY created_at").bind(u.userId).all(),db().prepare("SELECT recipient_id FROM agent_unlocks WHERE user_id=?").bind(u.userId).all<{recipient_id:string}>(),db().prepare("SELECT id,recipient_id,recipient_name,status,created_at,destination_key FROM agent_submissions WHERE user_id=? ORDER BY created_at DESC LIMIT 200").bind(u.userId).all(),db().prepare("SELECT session_id,purpose,bundle,amount FROM agent_orders WHERE user_id=? AND status='pending' AND session_id IS NOT NULL ORDER BY created_at DESC LIMIT 10").bind(u.userId).all()]);
 
-    return json({user:{name:u.fullName,email:u.email},isAdmin:await isAdministrator(),profile:p,credits,introCredits,pendingOrders:pendingOrders.results,files:files.results,unlocked:unlocked.results.map(x=>x.recipient_id),activity:activity.results,deliveryReady:!!(runtime.RESEND_API_KEY&&runtime.MAIL_FROM),paymentsReady:agentPaymentsReady()});
+    return json({user:{name:u.fullName,email:u.email},isAdmin:await isAdministrator(),networkProfile:await networkProfile(db(),u.userId),profile:p,credits,introCredits,pendingOrders:pendingOrders.results,files:files.results,unlocked:credits>=0?unlocked.results.map(x=>publicDestination(x.recipient_id)):[],activity:activity.results.map(row=>{const a=row as {recipient_id:string;destination_key:string;recipient_name:string};const r=entries.find(x=>x.id===a.recipient_id);return {...row,recipient_id:r?publicId(r.id):'',destination_key:publicDestination(a.destination_key),recipient_name:r?publicRecipient(r,credits>=0&&unlocked.results.some(x=>x.recipient_id===r.destinationKey)).name:'Directory recipient'};}),deliveryReady:!!(runtime.RESEND_API_KEY&&runtime.MAIL_FROM),paymentsReady:agentPaymentsReady()});
 
   }
 
@@ -50,7 +61,9 @@ async function handle(req:Request,ctx:Context){try{
 
   if(path==='contacts'&&req.method==='GET')return json(await contacts(u.userId,url.searchParams.get('id')||''));
 
-  if(path==='unlock'&&req.method==='POST'){const b=await readJSON(req);return json(await unlock(u.userId,b.id));}
+  if(['unlock','checkout','send'].includes(path)&&req.method==='POST'){const np=await networkProfile(db(),u.userId);if(!np)throw new Problem(409,'Complete your role and age details in Network & chat first.');if(!guardianCleared(np))throw new Problem(403,'Guardian consent must be approved before contacting representatives or purchasing credits.');if(path==='send'&&np.role!=='player')throw new Problem(403,'Player introductions are available to player accounts. Use Network & chat for professional connections.');}
+
+  if(path==='unlock'&&req.method==='POST'){const b=await readJSON(req);return json(await unlock(u.userId,b.id,b.expectedCredits));}
 
   if(path==='checkout'&&req.method==='POST'){const b=await readJSON(req);return json(await createAgentCheckout(u.userId,Number(b.credits),b.purpose==='introduction'?'introduction':'unlock',url.origin,b.method==='card'?'card':'paypal'));}
 

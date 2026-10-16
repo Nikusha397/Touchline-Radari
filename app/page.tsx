@@ -14,5 +14,5 @@ export default async function Page({searchParams}:{searchParams:Query}){
  const kind=params.kind==='agent'?'agent':'agency';
  const country=typeof params.country==='string'?params.country.slice(0,100):'';
  const q=typeof params.q==='string'?params.q.slice(0,120):'';
- return <><StructuredData data={{'@context':'https://schema.org','@type':'WebSite','@id':SITE_URL+'/#website',url:SITE_URL,name:'TOUCHLINE Radar',alternateName:'Touchline Radar',description:'Football agents and agencies by country, player profiles and introductions.',publisher:{'@id':SITE_URL+'/#organization'},inLanguage:'en'}}/><Radar initialListing={initialDirectory(kind,country,q)} initialKind={kind} initialCountry={country} initialSearch={q}/></>;
+ return <><StructuredData data={{'@context':'https://schema.org','@type':'WebSite','@id':SITE_URL+'/#website',url:SITE_URL,name:'TOUCHLINE Radar',alternateName:'Touchline Radar',description:'Football agents and agencies by country, player profiles and introductions.',publisher:{'@id':SITE_URL+'/#organization'},inLanguage:'en'}}/><Radar initialListing={await initialDirectory(kind,country,q)} initialKind={kind} initialCountry={country} initialSearch={q}/></>;
 }

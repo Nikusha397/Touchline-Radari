@@ -11,7 +11,9 @@ export async function bodyBytes(request:Request,limit:number):Promise<Uint8Array
 export async function bodyText(request:Request,limit:number){return new TextDecoder().decode(await bodyBytes(request,limit));}
 export function constantEqual(a:string,b:string){if(a.length!==b.length)return false;let diff=0;for(let i=0;i<a.length;i++)diff|=a.charCodeAt(i)^b.charCodeAt(i);return diff===0}
 export async function rateLimit(request:Request,scope:string,limit:number,seconds=3600,identity?:string) {
-  const ip=request.headers.get('cf-connecting-ip') || 'unavailable';
+  // Only trust a header that the deployment's reverse proxy overwrites.
+  const ipHeader=setting('TRUSTED_CLIENT_IP_HEADER');
+  const ip=(ipHeader ? request.headers.get(ipHeader)?.trim() : undefined) || 'unavailable';
   const raw=scope+':'+(identity||ip)+':'+setting('RADAR_SERVICE_TOKEN');
   const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw));
   const key=Array.from(new Uint8Array(hash)).map(x=>x.toString(16).padStart(2,'0')).join('');

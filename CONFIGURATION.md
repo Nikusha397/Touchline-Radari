@@ -1,6 +1,6 @@
 # Runtime configuration
 
-Production variables are managed in the existing Sites project's runtime environment. Inspected revision: 9. Secrets are not exported. Placeholders in .dev.vars.example and .env.example are for setup only.
+The Next.js application reads process.env, including .env.local in development. Copy .env.example to .env.local and supply real service values privately. The existing hosted Sites environment is separate and its secrets were not exported.
 
 | Variable | Purpose | Where to obtain/set it |
 | --- | --- | --- |
@@ -22,12 +22,12 @@ Production variables are managed in the existing Sites project's runtime environ
 
 No active Stripe configuration was listed. Old Stripe/trial code exists for historical compatibility, while retired routes return 410. Do not enable it by adding random credentials.
 
-Required Cloudflare bindings are `DB` (D1 database) and `BUCKET` (R2 bucket). The real managed database/bucket provider IDs are not exposed by the Sites metadata API used for this handover. IDs in the local Vite configuration are development placeholders, not the real production resources.
+The Node.js runtime uses DATABASE_PATH (default .data/touchline.sqlite) and UPLOADS_PATH (default .data/uploads). Both need persistent storage in production. TRUSTED_CLIENT_IP_HEADER optionally names a single-IP header overwritten by your trusted reverse proxy. Existing D1/R2 data requires an explicit migration before switching production.
 
 Google OAuth credentials are configured in Google Cloud project `touchline-radar` and in Supabase's Google provider settings. They are not supplied by GOOGLE_AUTH_ENABLED. The current Supabase callback is `https://sdudyygdolyrkvwqbczd.supabase.co/auth/v1/callback`; website return routes are under `/auth/callback`. Keep the allowed site origins and redirect URLs aligned when moving domains.
 
 The existing PayPal webhook endpoint is `https://touchlineradar.com/api/paypal/webhook`. PayPal return-page verification uses `/api/agent/paypal/capture` through the site's API. Webhook messages verify completed payments; they do not initiate another collection. A new host/app needs its matching webhook and secrets before payments are enabled.
 
-Custom domains `touchlineradar.com` and `www.touchlineradar.com` were both active with active TLS in Sites at inspection. The `www` and old hosted aliases redirect to the canonical root in middleware. DNS, Resend SPF/DKIM/DMARC records and Google ownership records are external configuration; source upload alone does not recreate them.
+Custom domains `touchlineradar.com` and `www.touchlineradar.com` were both active with active TLS in Sites at inspection. The `www` and old hosted aliases redirect to the canonical root in proxy.ts. DNS, Resend SPF/DKIM/DMARC records and Google ownership records are external configuration; source upload alone does not recreate them.
 
 Supabase email confirmation/provider settings, CAPTCHA or abuse settings, SMTP credentials, the Google consent screen, PayPal account eligibility and Resend DNS verification are dashboard settings, not automatically recreated by npm install. This export does not claim those dashboards were all re-audited.

@@ -1,0 +1,82 @@
+{
+  "A9607": {
+    "players": 39,
+    "marketValueEur": 8250000,
+    "sourceName": "Transfermarkt",
+    "sourceUrl": "https://www.transfermarkt.com/ama-football-agency/beraterfirma/berater/9607",
+    "checkedAt": "2026-10-16T17:04:26.481937Z",
+    "verified": true,
+    "sourceMode": "indexed_snapshot",
+    "sourceNote": "Historical search-index snapshot, reported crawled approximately 3 months before retrieval. Original update date unknown. Current figures could not be confirmed; direct access returned HTTP 403."
+  },
+  "A2190": {
+    "players": 39,
+    "marketValueEur": 7900000,
+    "sourceName": "Transfermarkt",
+    "sourceUrl": "https://www.transfermarkt.com/bfm-bode-football-management/beraterfirma/berater/2190",
+    "checkedAt": "2026-10-16T17:04:26.481937Z",
+    "verified": true,
+    "sourceMode": "indexed_snapshot",
+    "sourceNote": "Historical search-index snapshot, reported crawled approximately 3 months before retrieval. Original update date unknown. Current figures could not be confirmed; direct access returned HTTP 403."
+  },
+  "A13852": {
+    "players": 22,
+    "marketValueEur": 2380000,
+    "sourceName": "Transfermarkt",
+    "sourceUrl": "https://www.transfermarkt.com/mmsay-abdou-younes/beraterfirma/berater/13852",
+    "checkedAt": "2026-10-16T17:04:26.481937Z",
+    "verified": true,
+    "sourceMode": "indexed_snapshot",
+    "sourceNote": "Historical search-index snapshot, reported crawled approximately 3 months before retrieval. Original update date unknown. Current figures could not be confirmed; direct access returned HTTP 403."
+  },
+  "A7673": {
+    "players": 46,
+    "marketValueEur": 33000000,
+    "sourceName": "Transfermarkt",
+    "sourceUrl": "https://www.transfermarkt.com/futbol21-agency/beraterfirma/berater/7673",
+    "checkedAt": "2026-10-16T17:04:26.481937Z",
+    "verified": true,
+    "sourceMode": "indexed_snapshot",
+    "sourceNote": "Historical search-index snapshot, reported crawled approximately 3 months before retrieval. Original update date unknown. Current figures could not be confirmed; direct access returned HTTP 403."
+  },
+  "A5629": {
+    "players": 30,
+    "marketValueEur": 4750000,
+    "sourceName": "Transfermarkt",
+    "sourceUrl": "https://www.transfermarkt.de/mssports/beraterfirma/berater/5629",
+    "checkedAt": "2026-10-16T17:04:26.481937Z",
+    "verified": true,
+    "sourceMode": "indexed_snapshot",
+    "sourceNote": "Historical search-index snapshot, reported crawled approximately 3 months before retrieval. Original update date unknown. Current figures could not be confirmed; direct access returned HTTP 403."
+  },
+  "A10404": {
+    "players": 8,
+    "marketValueEur": 2200000,
+    "sourceName": "Transfermarkt",
+    "sourceUrl": "https://www.transfermarkt.com/okon-management/beraterfirma/berater/10404",
+    "checkedAt": "2026-10-16T17:04:26.481937Z",
+    "verified": true,
+    "sourceMode": "indexed_snapshot",
+    "sourceNote": "Historical search-index snapshot, reported crawled approximately 3 months before retrieval. Original update date unknown. Current figures could not be confirmed; direct access returned HTTP 403."
+  },
+  "A13978": {
+    "players": 27,
+    "marketValueEur": 12740000,
+    "sourceName": "Transfermarkt",
+    "sourceUrl": "https://www.transfermarkt.com/ala-sur-team/beraterfirma/berater/13978",
+    "checkedAt": "2026-10-16T17:04:26.481937Z",
+    "verified": true,
+    "sourceMode": "indexed_snapshot",
+    "sourceNote": "Historical search-index snapshot, reported crawled approximately 3 months before retrieval. Original update date unknown. Current figures could not be confirmed; direct access returned HTTP 403."
+  },
+  "A10231": {
+    "players": 15,
+    "marketValueEur": 5950000,
+    "sourceName": "Transfermarkt",
+    "sourceUrl": "https://www.transfermarkt.com/as-sports-management-argentina/beraterfirma/berater/10231",
+    "checkedAt": "2026-10-16T17:04:26.481937Z",
+    "verified": true,
+    "sourceMode": "indexed_snapshot",
+    "sourceNote": "Historical search-index snapshot, reported crawled approximately 3 months before retrieval. Original update date unknown. Current figures could not be confirmed; direct access returned HTTP 403."
+  }
+}

@@ -1,3 +1,4 @@
+import {passwordSchema,dobSchema,roleSchema,ageAt} from '../../../lib/network-policy';
 import {z} from 'zod';
 import {authClient,getAuthUser} from '../../../lib/auth';
 import {database,noStoreJson,sameOrigin,upsertProfile,setting} from '../../../lib/store';
@@ -5,7 +6,7 @@ import {POLICY_VERSION,safeNext,siteOrigin} from '../../../lib/product';
 import {rateLimit,bodyText,RequestTooLarge} from '../../../lib/security';
 
 const email=z.string().trim().email().max(254).transform(s=>s.toLowerCase());
-const password=z.string().min(12,'Use at least 12 characters.').max(128);
+const password=passwordSchema;
 export async function POST(req:Request,context:{params:Promise<{action:string}>}){
   if(!sameOrigin(req))return noStoreJson({error:'Invalid request origin.'},403);
   try{
@@ -34,13 +35,13 @@ export async function POST(req:Request,context:{params:Promise<{action:string}>}
       return noStoreJson({url:data.url});
     }
     if(action==='signup'){
-      const parsed=z.object({email,password,name:z.string().trim().min(2).max(80),consent:z.literal(true)}).parse(body);
+      const parsed=z.object({email,password,confirmPassword:z.string(),role:roleSchema,dob:dobSchema,name:z.string().trim().min(2).max(80),consent:z.literal(true)}).refine(v=>v.password===v.confirmPassword,'Passwords must match.').refine(v=>v.role==='player'||ageAt(v.dob)>=18,'Agent and agency representatives must be 18 or older.').parse(body);
       const agreedAt=new Date().toISOString();
-      const {data,error}=await client.auth.signUp({email:parsed.email,password:parsed.password,options:{emailRedirectTo:siteOrigin()+'/auth/callback?next='+encodeURIComponent(next),data:{full_name:parsed.name}}});
+      const {data,error}=await client.auth.signUp({email:parsed.email,password:parsed.password,options:{emailRedirectTo:siteOrigin()+'/auth/callback?next=/network',data:{full_name:parsed.name,requested_role:parsed.role}}});
       if(error){console.error('auth_signup_provider_error',error.code);return noStoreJson({error:'Could not create the account. Try signing in if you already registered, or try again later.'},400);}
       if(data.user)await database().prepare('INSERT OR IGNORE INTO agreements(user_id,kind,version,agreed_at) VALUES (?,?,?,?)').bind(data.user.id,'signup',POLICY_VERSION,agreedAt).run();
-      if(data.session){const user=await getAuthUser();if(!user)throw Error('Signup session could not be verified.');await upsertProfile(user);return noStoreJson({url:next});}
-      return noStoreJson({message:'Your account is ready. Sign in with your email and password.'});
+      if(data.session){const user=await getAuthUser();if(!user)throw Error('Signup session could not be verified.');await upsertProfile(user);return noStoreJson({url:'/network'});}
+      return noStoreJson({message:'Check your email to confirm your account, then complete your network profile.'});
     }
     if(action==='login'){
       const parsed=z.object({email,password:z.string().min(1).max(128)}).parse(body);
@@ -57,6 +58,7 @@ export async function POST(req:Request,context:{params:Promise<{action:string}>}
     }
     if(!await getAuthUser())return noStoreJson({error:'Open a valid password-reset link or sign in first.'},401);
     const newPassword=password.parse(body.password);
+    if(newPassword!==body.confirmPassword)return noStoreJson({error:'Passwords must match.'},400);
     const {error}=await client.auth.updateUser({password:newPassword});
     if(error)return noStoreJson({error:'The password could not be updated. Request a new reset link and try again.'},400);
     return noStoreJson({message:'Password updated. You can continue to your account.',url:'/'});

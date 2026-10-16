@@ -1,4 +1,7 @@
-import { env } from "cloudflare:workers";
+import {withLivePortfolios} from './portfolio-feed.server';
+import { chargeContactUnlock } from './contact-unlock';
+import { publicId, projectRecipient, quoteFor } from './directory-catalog.server';
+import { nodeRuntime } from './node-storage';
 
 import directory from "./directory.server.json";
 
@@ -12,7 +15,7 @@ type PrivateRecipient = Recipient & { email: string[]; phone: string[] };
 
 export const entries = directory as PrivateRecipient[];
 
-export const runtime = env as unknown as {DB: D1Database; BUCKET: R2Bucket; RESEND_API_KEY?: string; MAIL_FROM?: string; STRIPE_SECRET_KEY?: string; STRIPE_WEBHOOK_SECRET?: string};
+export const runtime = nodeRuntime;
 
 export class Problem extends Error {constructor(public status:number, message:string){super(message)}}
 
@@ -28,9 +31,9 @@ export function sameOrigin(req:Request){if(req.headers.get("origin")!==new URL(r
 
 export async function readJSON(req:Request){if(!req.headers.get("content-type")?.includes("application/json"))throw new Problem(415,"JSON required.");let raw:string;try{raw=await bodyText(req,30000);}catch(e){if(e instanceof RequestTooLarge)throw new Problem(413,'Request too large.');throw e;}try{return JSON.parse(raw)}catch{throw new Problem(400,"Invalid request.")}}
 
-export function recipient(id:string){const r=entries.find(x=>x.id===id);if(!r)throw new Problem(404,"This recipient is unavailable.");return r;}
+export function recipient(id:string){const r=entries.find(x=>publicId(x.id)===id);if(!r)throw new Problem(404,"This recipient is unavailable.");return r;}
 
-export function publicRecipient(r:PrivateRecipient){const {email,phone,...visible}=r;return visible;}
+export function publicRecipient(r:PrivateRecipient, unlocked=false){return projectRecipient(r,unlocked);}
 
 export async function profile(userId:string){const row=await db().prepare("SELECT data FROM agent_profiles WHERE user_id=?").bind(userId).first<{data:string}>();if(!row)return null;const {dob:previousDateOfBirth,...player}=JSON.parse(row.data);return player as Player;}
 
@@ -62,21 +65,17 @@ export function validateProfile(value:any):Player {
 
 export async function requireProfile(userId:string){const p=await profile(userId);if(!p||!profileReady(p))throw new Problem(400,"Save your player profile before continuing.");return p;}
 
-export async function contacts(userId:string,id:string){if(await balance(userId)<0)throw new Problem(403,"Resolve the refunded credit balance before accessing contacts.");const r=recipient(id);const unlocked=await db().prepare("SELECT id FROM agent_unlocks WHERE user_id=? AND recipient_id=?").bind(userId,r.destinationKey).first();if(!unlocked)throw new Problem(403,"Unlock this contact first.");return {email:r.email,phone:r.phone};}
+export async function contacts(userId:string,id:string){if(await balance(userId)<0)throw new Problem(403,"Resolve the refunded credit balance before accessing contacts.");const r=recipient(id);const unlocked=await db().prepare("SELECT id FROM agent_unlocks WHERE user_id=? AND recipient_id=?").bind(userId,r.destinationKey).first();if(!unlocked)throw new Problem(403,"Unlock this contact first.");return {email:r.email,phone:r.phone,recipient:(await withLivePortfolios([publicRecipient(r,true)]))[0]};}
 
-export async function unlock(userId:string,id:string){
+export async function unlock(userId:string,id:string,expectedCredits:unknown){
 
   const r=recipient(id);const key=userId+":"+r.destinationKey;
+  const existing=await db().prepare("SELECT id FROM agent_unlocks WHERE id=?").bind(key).first();
+  if(existing)return {contacts:await contacts(userId,id),credits:await balance(userId)};
+  const cost=quoteFor(r).credits;
+  if(expectedCredits!==cost)throw new Problem(409,"The unlock price has changed. Refresh the directory and review the current price.");
 
-  await db().batch([
-
-    db().prepare("INSERT OR IGNORE INTO agent_ledger (id,user_id,delta,reason,created_at) SELECT ?,?,-1,'contact unlock',? WHERE (SELECT COALESCE(SUM(delta),0) FROM agent_ledger WHERE user_id=? AND purpose='unlock')>=1 AND NOT EXISTS (SELECT 1 FROM agent_unlocks WHERE user_id=? AND recipient_id=?)").bind('unlock:'+key,userId,now(),userId,userId,r.destinationKey),
-
-    db().prepare("INSERT OR IGNORE INTO agent_unlocks (id,user_id,recipient_id,created_at) SELECT ?,?,?,? WHERE EXISTS (SELECT 1 FROM agent_ledger WHERE id=? AND user_id=? AND delta=-1)").bind(key,userId,r.destinationKey,now(),'unlock:'+key,userId),
-
-  ]);
-
-  const u=await db().prepare("SELECT id FROM agent_unlocks WHERE id=?").bind(key).first();if(!u)throw new Problem(402,"You need one unlock credit. Choose a credit bundle to continue.");
+  if(!await chargeContactUnlock(db(),userId,r.destinationKey,cost,now()))throw new Problem(402,`You need ${cost} contact credits. Choose a credit bundle to continue.`);
 
   return {contacts:await contacts(userId,id),credits:await balance(userId)};
 

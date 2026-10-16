@@ -1,0 +1,11 @@
+{
+  "unratedCredits": 1,
+  "minimumReviews": 10,
+  "maxAgeDays": 90,
+  "tiers": [
+    { "minimumRating": 0, "credits": 1 },
+    { "minimumRating": 4, "credits": 2 },
+    { "minimumRating": 4.5, "credits": 3 },
+    { "minimumRating": 4.8, "credits": 4 }
+  ]
+}

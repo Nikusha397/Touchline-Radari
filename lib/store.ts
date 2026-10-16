@@ -1,8 +1,8 @@
-import { env } from 'cloudflare:workers';
+import { getDatabase } from './node-storage';
 import { seeds } from './seed';
 import type { TrialPreview, TrialDetails } from './radar-types';
-export function database() { if (!env.DB) throw new Error('The radar is temporarily unavailable. Please try again.'); return env.DB; }
-export function setting(name: string): string { return String((env as unknown as Record<string,unknown>)[name] ?? ''); }
+export function database() { return getDatabase(); }
+export function setting(name: string): string { return process.env[name] ?? ''; }
 export const seedCheckedAt = '2026-10-07T12:00:00.000Z';
 export async function ensureSeeds() {
   const db = database();
