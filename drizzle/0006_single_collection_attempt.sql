@@ -1,0 +1,1 @@
+ALTER TABLE `agent_orders` ADD `capture_attempted_at` text DEFAULT 'check-only';

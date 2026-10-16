@@ -1,0 +1,25 @@
+{
+  "preparedDate": "2026-10-16",
+  "timezone": "Asia/Tashkent",
+  "sourceCommit": "3b5f2a155eba0a8339f6ad942387c1248dd449d5",
+  "liveSitesVersion": 25,
+  "projectId": "appgprj_6ac63839257c8191836a7b8f2acc0fa3",
+  "website": "https://touchlineradar.com/",
+  "promoFeature": "Cancelled; not deployed or included",
+  "privateFilesSeparated": [
+    "lib/additional-seeds.ts",
+    "lib/directory.server.json",
+    "lib/seed.ts"
+  ],
+  "excluded": "Production secrets, live customer database dump, uploaded PDFs, sessions, .git, node_modules and build/cache output",
+  "directoryCounts": {
+    "agencies": 753,
+    "agents": 1023
+  },
+  "exportOnlyChanges": [
+    "Replaced outdated README; added handover documentation and empty environment templates",
+    "Added ignored contact-free examples and setup:data/postinstall script",
+    "GitHub-safe archive omits real directory/legacy seed files and customer-specific grant contents",
+    "Added schema-only Supabase admin-function snapshot; no account/allowlist rows"
+  ]
+}

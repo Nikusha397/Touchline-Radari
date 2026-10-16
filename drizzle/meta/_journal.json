@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1791376569923,
+      "tag": "0000_lying_naoko",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1791392015781,
+      "tag": "0001_bored_sersi",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792004090084,
+      "tag": "0002_crazy_exiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1792009125075,
+      "tag": "0003_promotional_contact_credits",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1792011673223,
+      "tag": "0004_admin_credit_audit",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1792012479029,
+      "tag": "0005_owner_credit_audit",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1792054955524,
+      "tag": "0006_single_collection_attempt",
+      "breakpoints": true
+    }
+  ]
+}

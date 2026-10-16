@@ -1,0 +1,2 @@
+export const metadata={title:'Checkout cancelled | TOUCHLINE Radar',robots:{index:false,follow:false}};
+export default function Page(){return <main className="status-page"><a className="status-brand" href="/">TOUCHLINE <span>Radar</span></a><h1>Checkout cancelled.</h1><p>No new information has been unlocked from this checkout. If PayPal shows a completed payment, contact support before paying again.</p><a className="button button-lime" href="/">Return to radar</a><div className="status-links"><a href="/">Back to radar</a><a href="/contact">Support</a></div></main>;}
