@@ -1,3 +1,6 @@
+export const dynamic='force-dynamic';
+import {getAuthUser} from '../../../lib/auth';
+import {redirect} from 'next/navigation';
 import {notFound} from 'next/navigation';
 import {countryDirectory} from '../../../lib/directory-public.server';
 import {seo,breadcrumb} from '../../../lib/seo';
@@ -10,6 +13,7 @@ export async function generateMetadata({params,searchParams}:Props){
  return seo(`Football Agents & Agencies in ${c.name}${page>1?' — Page '+page:''} | TOUCHLINE Radar`,`Browse ${c.agents} agent registration records and ${c.agencies} football agency listings connected to ${c.name}. Compare listings and share your player profile.`,`/football-agents/${c.slug}${page>1?'?page='+page:''}`);
 }
 export default async function CountryAgents({params,searchParams}:Props){
+ if(!await getAuthUser())redirect('/');
  const c=countryDirectory((await params).country);if(!c)notFound();
  const page=pageNumber((await searchParams).page),pages=Math.ceil(c.records.length/24);if(!page||page>pages)notFound();
  const path='/football-agents/'+c.slug;

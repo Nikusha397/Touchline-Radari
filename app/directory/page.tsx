@@ -1,3 +1,5 @@
+import {getAuthUser} from '../../lib/auth';
+import {redirect} from 'next/navigation';
 import Radar from '../agent-radar';
 import {initialDirectory} from '../../lib/directory-public.server';
 import {seo,SITE_URL} from '../../lib/seo';
@@ -10,6 +12,7 @@ export async function generateMetadata({searchParams}:{searchParams:Query}){
  return seo('Football Agents & Agencies by Country | TOUCHLINE Radar','Find football agents and agencies by country. Create a free player profile, send introductions for $0.50 each, or reveal published contacts.','/directory',index);
 }
 export default async function Page({searchParams}:{searchParams:Query}){
+ if(!await getAuthUser())redirect('/');
  const params=await searchParams;
  const kind=params.kind==='agent'?'agent':'agency';
  const country=typeof params.country==='string'?params.country.slice(0,100):'';

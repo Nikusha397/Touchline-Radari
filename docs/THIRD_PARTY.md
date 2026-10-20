@@ -15,3 +15,5 @@ Community implementation reviewed 2026-10-19. No new runtime packages were insta
 The new community layout uses original CSS, the existing self-hosted Manrope font, semantic native controls and native dialog focus management. It adds no image/CDN dependency.
 
 Provider docs consulted: https://developer.paypal.com/api/subscriptions/v1 and https://developer.paypal.com/subscriptions/integrate .
+
+Landing update (20 October 2026): reused local Manrope and original CSS illustrations. Reviewed Radix Primitives MIT guidance and Supabase SSR documentation; no source copied or package installed. Existing axe-core 4.11.4 (MPL-2.0) was used in a temporary local audit route, removed after testing; it is not shipped in the landing bundle.

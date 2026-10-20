@@ -21,6 +21,7 @@ async function handle(req:Request,ctx:Context){try{
     if(!await rateLimit(req,'agent-directory-minute',90,60)||!await rateLimit(req,'agent-directory-hour',1500,3600))throw new Problem(429,'Please slow down and try again shortly.');
 
     const viewer=await getAuthUser();
+    if(!viewer)throw new Problem(401,'Sign in to view agents and agencies.');
     const rights=viewer&&await balance(viewer.userId)>=0 ? await db().prepare('SELECT recipient_id FROM agent_unlocks WHERE user_id=?').bind(viewer.userId).all<{recipient_id:string}>() : {results:[]};
     const unlockedKeys=new Set(rights.results.map(x=>x.recipient_id));
     const kind=url.searchParams.get('kind')==='agent'?'agent':'agency';const all=entries.filter(x=>x.kind===kind).map(x=>publicRecipient(x,unlockedKeys.has(x.destinationKey)));

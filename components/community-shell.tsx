@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type {ReactNode} from 'react';
-const sections=[['home','/','Home'],['directory','/directory','Agents & agencies'],['inbox','/inbox','Inbox'],['profile','/network','My profile'],['subscription','/subscriptions','Membership']] as const;
+const sections=[['home','/community','Home'],['directory','/directory','Agents & agencies'],['inbox','/inbox','Inbox'],['profile','/network','My profile'],['subscription','/subscriptions','Membership']] as const;
 export function CommunityShell({active,children,tools}:{active:'home'|'directory'|'inbox'|'subscription'|'profile';children:ReactNode;tools?:ReactNode}){
  return <div className="app-shell agent-platform editorial-platform unified-platform"><a className="tl-skip" href="#site-main">Skip to content</a>
   <aside className="sidebar site-sidebar"><Link className="brand" href="/" aria-label="Touchline Radar home"><span className="radar-mark" aria-hidden="true"><span/><i/></span><div><strong>TOUCHLINE</strong><span>Radar<span className="brand-dot">.</span></span></div></Link>

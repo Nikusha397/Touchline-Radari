@@ -61,3 +61,5 @@ Cancellation stops renewal; confirmed paid access lasts to expiry. Suspensions/r
 Run `npm test`, `npx tsc --noEmit`, `npm run lint` and `npm run build`. See `docs/COMMUNITY-REVIEW.md` for security/accessibility verification and remaining release work. Authenticated multi-user browser journeys and real provider renewal/refund/cancellation require test accounts and sandbox payment configuration. Confirm registered seller name/address and obtain jurisdiction-specific legal review before public launch.
 
 The home feed, directory, inbox, profile and membership share `components/community-shell.tsx` and `app/site-shell.css`. Keep global navigation and visual tokens there; directory CV/email-introduction controls belong in its local toolbar.
+
+Signed-out visitors now see the sign-in landing at `/`; verified signed-in users see the feed. `/community` remains publicly browsable. The landing uses the existing `/auth/login` endpoint and does not store credentials locally.

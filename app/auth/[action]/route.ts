@@ -25,23 +25,24 @@ export async function POST(req:Request,context:{params:Promise<{action:string}>}
       const user=await getAuthUser();
       if(!user)return noStoreJson({error:'Your account could not be confirmed. Please request a new link.'},403);
       await upsertProfile(user);
-      return noStoreJson({url:parsed.type==='recovery'?'/reset-password':next});
+      if(parsed.type==='email'){const {error:signOutError}=await client.auth.signOut();if(signOutError)throw signOutError;return noStoreJson({url:'/?notice=confirmed'});}
+      return noStoreJson({url:'/reset-password'});
     }
     if(action==='google'){
       z.object({consent:z.literal(true)}).parse(body);
       if(setting('GOOGLE_AUTH_ENABLED')!=='true')return noStoreJson({error:'Google sign-in is not available.'},503);
-      const {data,error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:siteOrigin()+'/auth/callback?next='+encodeURIComponent(next)}});
+      const {data,error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:siteOrigin()+'/auth/callback?next='+encodeURIComponent(next)+(body.signup===true?'&registered=1':'')}});
       if(error||!data.url)throw Error('Google sign-in could not be opened.');
       return noStoreJson({url:data.url});
     }
     if(action==='signup'){
       const parsed=z.object({email,password,confirmPassword:z.string(),role:roleSchema,dob:dobSchema,name:z.string().trim().min(2).max(80),consent:z.literal(true)}).refine(v=>v.password===v.confirmPassword,'Passwords must match.').refine(v=>v.role==='player'||ageAt(v.dob)>=18,'Agent and agency representatives must be 18 or older.').parse(body);
       const agreedAt=new Date().toISOString();
-      const {data,error}=await client.auth.signUp({email:parsed.email,password:parsed.password,options:{emailRedirectTo:siteOrigin()+'/auth/callback?next=/network',data:{full_name:parsed.name,requested_role:parsed.role}}});
+      const {data,error}=await client.auth.signUp({email:parsed.email,password:parsed.password,options:{emailRedirectTo:siteOrigin()+'/auth/callback?registered=1',data:{full_name:parsed.name,requested_role:parsed.role}}});
       if(error){console.error('auth_signup_provider_error',error.code);return noStoreJson({error:'Could not create the account. Try signing in if you already registered, or try again later.'},400);}
       if(data.user)await database().prepare('INSERT OR IGNORE INTO agreements(user_id,kind,version,agreed_at) VALUES (?,?,?,?)').bind(data.user.id,'signup',POLICY_VERSION,agreedAt).run();
-      if(data.session){const user=await getAuthUser();if(!user)throw Error('Signup session could not be verified.');await upsertProfile(user);return noStoreJson({url:'/network'});}
-      return noStoreJson({message:'Check your email to confirm your account, then complete your network profile.'});
+      if(data.session){const user=await getAuthUser();if(!user)throw Error('Signup session could not be verified.');await upsertProfile(user);const {error:signOutError}=await client.auth.signOut();if(signOutError)throw signOutError;return noStoreJson({url:'/?notice=registered'});}
+      return noStoreJson({url:'/?notice=check-email'});
     }
     if(action==='login'){
       const parsed=z.object({email,password:z.string().min(1).max(128)}).parse(body);

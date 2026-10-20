@@ -14,6 +14,7 @@ async function handle(req:Request){try{
  const u=await getAuthUser(),db=database(),url=new URL(req.url),action=url.searchParams.get('action')||'feed';
  if(!await rateLimit(req,'community-read',180,60,u?.userId))throw new NetworkError('Too many requests. Try again shortly.',429);
  if(req.method==='GET'){
+  if(action!=='session'&&!u)throw new NetworkError('Sign in to view the community.',401);
   if(action==='feed'){const kind=z.enum(['','news','discussion','opportunity']).parse(url.searchParams.get('kind')||'');const before=z.union([z.literal(''),id]).parse(url.searchParams.get('before')||'');return noStoreJson(await feed(db,u?.userId,kind,before));}
   if(action==='comments')return noStoreJson(await comments(db,u?.userId||'',id.parse(url.searchParams.get('id')),z.union([z.literal(''),id]).parse(url.searchParams.get('before')||'')));
   if(action==='session')return noStoreJson(await communitySession(db,u?.userId));

@@ -57,3 +57,33 @@ body .unified-platform .site-sidebar .brand,body .unified-platform .site-sidebar
 body .unified-platform .site-sidebar{border-right:1px solid #e1e5da}
 
 body .unified-platform .site-sidebar .radar-mark{color:#52693d}
+
+/* Content must reflow instead of pushing the viewport wider. */
+body .unified-platform .workspace,body .unified-platform .site-content,body .unified-platform .tl-home-grid>*{min-width:0}
+body .unified-platform h1,body .unified-platform h2,body .unified-platform h3{text-wrap:balance}
+body .unified-platform p{text-wrap:pretty;overflow-wrap:anywhere}
+body .unified-platform .tl-post-body,body .unified-platform .tl-comment p,body .unified-platform .tl-message p{overflow-wrap:anywhere;word-break:normal}
+body .unified-platform .site-sidebar a,body .unified-platform .directory-local-nav button{transition:background-color 160ms,color 160ms}
+body .unified-platform .site-sidebar a:focus-visible{outline:3px solid #52743c;outline-offset:2px}
+body .unified-platform .site-page-tools .topbar-right{flex-shrink:1;min-width:0}
+body .unified-platform .tl-feed-tabs{flex-wrap:wrap;gap:4px 20px;overflow:visible}
+body .unified-platform .tl-inbox-heading>div{min-width:0}
+body .unified-platform .tl-membership-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+body .unified-platform .tl-membership-card{padding:28px}
+body .unified-platform .tl-dialog{width:min(560px,calc(100vw - 32px));max-height:calc(100svh - 32px);overflow:auto;overflow-wrap:anywhere}
+body .unified-platform .tl-conversation>header{gap:12px}
+body .unified-platform .tl-thread-list strong{overflow-wrap:anywhere}
+body .unified-platform .tl-reply textarea{font-size:16px}
+@media(max-width:1000px){body .unified-platform .tl-chat-layout{grid-template-columns:minmax(180px,220px) minmax(0,1fr)}body .unified-platform .tl-membership-grid{grid-template-columns:1fr}body .unified-platform .tl-player-plan{padding:24px 0}}
+@media(max-width:760px){body .unified-platform .site-sidebar nav{flex-wrap:wrap;overflow:visible;gap:4px}body .unified-platform .site-sidebar nav a{padding:8px 12px;flex:0 1 auto}body .unified-platform .tl-chat-layout{grid-template-columns:minmax(0,1fr)}body .unified-platform .tl-dialog{padding:20px}body .unified-platform .tl-locked-inbox>.tl-button{margin-left:0;white-space:normal}body .unified-platform .tl-composer-bar>div{flex-basis:100%}body .unified-platform .tl-feed-tabs button{font-size:12px}body .unified-platform .tl-membership-card{padding:24px}}
+@media(max-width:400px){body .unified-platform .site-page-tools .credits-pill{font-size:10px;padding:8px}body .unified-platform .section-heading{align-items:start}body .unified-platform .country-chips{flex-wrap:wrap}body .unified-platform .tl-reply{flex-wrap:wrap}body .unified-platform .tl-reply .tl-button{margin-left:auto}}
+
+/* Shared 90% content measure and quiet pointer interactions. */
+body .unified-platform main.site-content{width:90%;max-width:none;padding:32px 0;margin-inline:auto}
+body .unified-platform .site-topbar,body .unified-platform .site-footer{padding-inline:5%}
+body .unified-platform .tl-home-grid{grid-template-columns:minmax(0,1fr) minmax(220px,28%)}
+body .unified-platform a:hover,body .unified-platform .tl-feed-help a{ text-decoration:none!important }
+body .unified-platform input:focus,body .unified-platform textarea:focus,body .unified-platform select:focus{outline:none;box-shadow:none}
+body .unified-platform input:focus-visible,body .unified-platform textarea:focus-visible,body .unified-platform select:focus-visible{border-color:#52693d;background-color:#f8fbf3}
+@media(max-width:1100px){body .unified-platform .tl-home-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:760px){body .unified-platform main.site-content{width:90%;padding:24px 0}}
