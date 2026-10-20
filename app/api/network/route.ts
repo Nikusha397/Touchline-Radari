@@ -3,8 +3,8 @@ import {z} from 'zod';
 import {getAuthUser} from '../../../lib/auth';
 import {database,noStoreJson,sameOrigin} from '../../../lib/store';
 import {bodyText,rateLimit,RequestTooLarge} from '../../../lib/security';
-import {profile,requireNetwork,saveNetworkProfile,reviews,writeReview,createThread,threadAccess,sendMessage,NetworkError} from '../../../lib/network-service';
-import {guardianCleared,chatEligible} from '../../../lib/network-policy';
+import {profile,requireNetwork,saveNetworkProfile,reviews,writeReview,NetworkError} from '../../../lib/network-service';
+import {readMessages,reply} from '../../../lib/community-service';
 import {privateEntries,publicId} from '../../../lib/directory-catalog.server';
 import {verificationReady,storeEvidence,readEvidence} from '../../../lib/verification-storage';
 import {nodeRuntime} from '../../../lib/node-storage';
@@ -13,19 +13,16 @@ const listing=(id:string)=>{const r=privateEntries.find(r=>publicId(r.id)===id);
 async function handle(req:Request){
  try{
  const db=database(),u=await getAuthUser(),url=new URL(req.url),action=url.searchParams.get('action')||'home';
- if(req.method==='GET'&&action==='reviews'){const r=listing(url.searchParams.get('id')||'');return noStoreJson(await reviews(db,r.destinationKey,u?.userId));}
+ if(action==='reviews'||action==='review')throw new NetworkError('Star reviews have been retired.',410);
  if(!u)return noStoreJson({error:'Sign in to use the network.'},401);
  if(req.method==='GET'){
  if(action==='home'){
  const me=await profile(db,u.userId);
- const rows=me?await db.prepare('SELECT user_id,role,name,country,bio,official_status,identity_status,dob,guardian_status,directory_id FROM network_profiles WHERE role<>? AND user_id<>? AND listed=1 ORDER BY name LIMIT 200').bind(me.role,u.userId).all<import('../../../lib/network-policy').NetworkProfile>():{results:[]};
- const members=rows.results.filter(p=>guardianCleared(p)).map(({dob,guardian_status,directory_id,...p})=>({...p,directoryId:directory_id?publicId(privateEntries.find(r=>r.destinationKey===directory_id)?.id||''):null,chatEligible:chatEligible({...p,dob,guardian_status} as import('../../../lib/network-policy').NetworkProfile)}));
- const threads=await db.prepare('SELECT t.id,p.name,p.user_id AS peer FROM network_threads t JOIN network_profiles p ON p.user_id=CASE WHEN t.member_a=? THEN t.member_b ELSE t.member_a END WHERE t.member_a=? OR t.member_b=? ORDER BY t.created_at DESC').bind(u.userId,u.userId,u.userId).all();
  const verifications=await db.prepare('SELECT id,kind,status,created_at,reason FROM network_verifications WHERE user_id=? ORDER BY created_at DESC').bind(u.userId).all();
  const entitlement=await db.prepare('SELECT expires_at FROM network_entitlements WHERE user_id=?').bind(u.userId).first();
- return noStoreJson({me,members,threads:threads.results,verifications:verifications.results,entitlement,verificationReady:verificationReady()});
+ return noStoreJson({me,members:[],threads:[],verifications:verifications.results,entitlement,verificationReady:verificationReady()});
  }
- if(action==='messages'){const id=url.searchParams.get('id')||'';await threadAccess(db,u.userId,id);const after=z.coerce.number().int().min(0).parse(url.searchParams.get('after')||0);return noStoreJson({items:(await db.prepare('SELECT id,sender,body,created_at FROM network_messages WHERE thread_id=? AND id>? ORDER BY id LIMIT 100').bind(id,after).all()).results});}
+ if(action==='messages')return noStoreJson(await readMessages(db,u.userId,z.string().uuid().parse(url.searchParams.get('id')),z.coerce.number().int().min(0).parse(url.searchParams.get('after')||0)));
  if(action==='evidence'){const r=await db.prepare('SELECT photo_key,id_key FROM network_verifications WHERE id=? AND user_id=?').bind(url.searchParams.get('id')||'',u.userId).first<{photo_key:string;id_key:string}>();const key=url.searchParams.get('file')==='photo'?r?.photo_key:r?.id_key;if(!key)throw new NetworkError('File not found.',404);const bytes=await readEvidence(key);if(!bytes)throw new NetworkError('File not found.',404);return new Response(new Uint8Array(bytes),{headers:{'Content-Type':'image/jpeg','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Content-Disposition':'attachment; filename="verification.jpg"'}});}
  throw new NetworkError('Not found.',404);
  }
@@ -35,8 +32,8 @@ async function handle(req:Request){
  if(action==='profile')return noStoreJson({me:await saveNetworkProfile(db,u.userId,body)});
  if(action==='review'){const r=listing(z.string().parse(body.id));await writeReview(db,u.userId,r.destinationKey,body);return noStoreJson(await reviews(db,r.destinationKey,u.userId));}
  if(action==='delete-review'){const r=listing(z.string().parse(body.id));await db.prepare('DELETE FROM network_reviews WHERE user_id=? AND destination=?').bind(u.userId,r.destinationKey).run();return noStoreJson({ok:true});}
- if(action==='thread')return noStoreJson(await createThread(db,u.userId,z.string().max(100).parse(body.peer)));
- if(action==='message'){await sendMessage(db,u.userId,z.string().uuid().parse(body.id),body.body);return noStoreJson({ok:true});}
+ if(action==='thread')throw new NetworkError('Use an introduction from the community feed to start a conversation.',409);
+ if(action==='message'){await reply(db,u.userId,z.string().uuid().parse(body.id),body.body);return noStoreJson({ok:true});}
  if(action==='block'){await requireNetwork(db,u.userId);const peer=z.string().max(100).parse(body.peer);await db.prepare('INSERT OR IGNORE INTO network_blocks(owner,target) VALUES (?,?)').bind(u.userId,peer).run();return noStoreJson({ok:true});}
  if(action==='report'){const v=z.object({kind:z.enum(['review','member','message']),target:z.string().min(1).max(100),reason:z.string().trim().min(10).max(1000)}).parse(body);await db.prepare('INSERT INTO network_reports(id,reporter,kind,target,reason,created_at) VALUES (?,?,?,?,?,?)').bind(randomUUID(),u.userId,v.kind,v.target,v.reason,new Date().toISOString()).run();return noStoreJson({ok:true});}
  if(action==='withdraw-verification'){

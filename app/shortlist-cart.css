@@ -18,12 +18,10 @@ body:has(.editorial-platform) .card-category.unconfirmed { color: #83632c; }
 body:has(.editorial-platform) .card-affiliation { font-size: 12px; line-height: 1.5; color: #61705a; margin: 8px 0 0 60px; overflow-wrap: anywhere; }
 body:has(.editorial-platform) .directory-grid { gap: 12px; }
 body:has(.editorial-platform) .card-name > svg { margin-right: 6px; color: #718263; vertical-align: -1px; }
-body:has(.editorial-platform) .card-rating-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; }
+body:has(.editorial-platform) .card-contact-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; }
 body:has(.editorial-platform) .rating-unavailable { color: #718069; font-size: 11px; }
 body:has(.editorial-platform) .rating-value { display: flex; align-items: center; gap: 4px; color: #76571b; font-size: 12px; font-weight: 700; }
 body:has(.editorial-platform) .rating-value > span { color: #637059; font-size: 11px; font-weight: 400; }
-body:has(.editorial-platform) .directory-rating > small { display: block; font-size: 11px; color: #637059; line-height: 1.6; margin-top: 6px; }
-body:has(.editorial-platform) .directory-rating a { text-decoration: underline; }
 body:has(.editorial-platform) .unlock-price { font-size: 11px; color: #36572b; background: #edf3e5; padding: 4px 8px; border-radius: 12px; white-space: nowrap; }
 body:has(.editorial-platform) .recipient-card:nth-child(3n+2) .card-cover { background: radial-gradient(ellipse at 25% 20%,#62786b,#17332c 70%); }
 body:has(.editorial-platform) .recipient-card:nth-child(3n+3) .card-cover { background: radial-gradient(ellipse at 80% 70%,#717651,#243a29 70%); }

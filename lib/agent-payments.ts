@@ -7,12 +7,12 @@ import {approvalUrl,type PayPalOrder} from './paypal-validation';
 import {PayPalProviderError} from './paypal-error';
 export function agentPaymentsReady(){return purchasesReady();}
 function minor(v:string){if(!/^\d{1,10}\.\d{2}$/.test(v))throw new Problem(400,'Invalid payment amount.');const [a,b]=v.split('.');return Number(a)*100+Number(b);}
-export async function createAgentCheckout(userId:string,credits:number,purpose:CreditPurpose,origin:string,method:'paypal'|'card'='paypal'){
+export async function createAgentCheckout(userId:string,credits:number,purpose:CreditPurpose,origin:string,method:'paypal'|'card'='paypal',network=false){
   if(!agentPaymentsReady())throw new Problem(503,'PayPal checkout is temporarily unavailable. No payment has been made.');
-  if(purpose==='introduction'&&(!runtime.RESEND_API_KEY||!runtime.MAIL_FROM))throw new Problem(503,'Introduction purchases open when email delivery is connected. No payment has been made.');
+  if(!network&&purpose==='introduction'&&(!runtime.RESEND_API_KEY||!runtime.MAIL_FROM))throw new Problem(503,'Introduction purchases open when email delivery is connected. No payment has been made.');
   const plan=(purpose==='introduction'?introductionBundles:bundles).find(p=>p.credits===credits);if(!plan)throw new Problem(400,'Choose an available bundle.');
   const id=crypto.randomUUID();await db().prepare("INSERT INTO agent_orders (id,user_id,bundle,purpose,amount,currency,status,created_at,capture_attempted_at) VALUES (?,?,?,?,?,'USD','pending',?,NULL)").bind(id,userId,credits,purpose,plan.cents,now()).run();
-  const order=await paypalRequest<PayPalOrder>('/v2/checkout/orders',{intent:'CAPTURE',purchase_units:[{custom_id:id,invoice_id:id,description:`TOUCHLINE Radar: ${credits} ${purpose==='introduction'?'player introductions':'contact unlocks'}`,payee:{merchant_id:setting('PAYPAL_MERCHANT_ID')},amount:{currency_code:'USD',value:(plan.cents/100).toFixed(2)}}],payment_source:{paypal:{experience_context:{brand_name:'TOUCHLINE Radar',landing_page:method==='card'?'GUEST_CHECKOUT':'NO_PREFERENCE',shipping_preference:'NO_SHIPPING',user_action:'PAY_NOW',return_url:origin+'/?payment=paypal',cancel_url:origin+'/?payment=cancelled'}}}},id);
+  const order=await paypalRequest<PayPalOrder>('/v2/checkout/orders',{intent:'CAPTURE',purchase_units:[{custom_id:id,invoice_id:id,description:`TOUCHLINE Radar: ${credits} ${purpose==='introduction'?'player introductions':'contact unlocks'}`,payee:{merchant_id:setting('PAYPAL_MERCHANT_ID')},amount:{currency_code:'USD',value:(plan.cents/100).toFixed(2)}}],payment_source:{paypal:{experience_context:{brand_name:'TOUCHLINE Radar',landing_page:method==='card'?'GUEST_CHECKOUT':'NO_PREFERENCE',shipping_preference:'NO_SHIPPING',user_action:'PAY_NOW',return_url:origin+'/directory?payment=paypal',cancel_url:origin+'/directory?payment=cancelled'}}}},id);
   await db().prepare('UPDATE agent_orders SET session_id=? WHERE id=?').bind(order.id,id).run();return {url:approvalUrl(order,false)};
 }
 export async function fulfillAgentPayPal(paypal:PayPalOrder){

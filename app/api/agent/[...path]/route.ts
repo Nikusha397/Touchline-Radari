@@ -1,6 +1,4 @@
-import {sortByOverall} from '../../../../lib/directory-sort';
-import {withLivePortfolios} from '../../../../lib/portfolio-feed.server';
-import {withCommunitySummary} from '../../../../lib/community-summary.server';
+import {sortDirectoryByName} from '../../../../lib/directory-sort';
 import {profile as networkProfile} from '../../../../lib/network-service';
 import {guardianCleared} from '../../../../lib/network-policy';
 import { publicDestination, publicId } from '../../../../lib/directory-catalog.server';
@@ -36,8 +34,8 @@ async function handle(req:Request,ctx:Context){try{
 
     const page=Math.max(1,Math.min(1000,Math.floor(Number(url.searchParams.get('page'))||1)));
 
-    const ranked=sortByOverall(await withLivePortfolios(filtered));
-    return json({items:withCommunitySummary(ranked.slice((page-1)*18,page*18)),total:filtered.length,countries,page,pages:Math.ceil(filtered.length/18),agencyCount:entries.filter(x=>x.kind==='agency').length,agentCount:entries.filter(x=>x.kind==='agent').length});
+    const ranked=sortDirectoryByName(filtered);
+    return json({items:ranked.slice((page-1)*18,page*18),total:filtered.length,countries,page,pages:Math.ceil(filtered.length/18),agencyCount:entries.filter(x=>x.kind==='agency').length,agentCount:entries.filter(x=>x.kind==='agent').length});
 
   }
 

@@ -14,7 +14,7 @@ export async function paypalRequest<T=any>(path:string,body?:unknown,requestId?:
   const headers:Record<string,string>={Authorization:'Bearer '+token.access_token,'Content-Type':'application/json','Prefer':'return=representation'};
   if(requestId)headers['PayPal-Request-Id']=requestId;
   const response=await fetch(paypalBase()+path,{method:body===undefined?'GET':'POST',headers,body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(20000)});
-  const result=await response.json() as any;
+  const raw=await response.text();const result=raw?JSON.parse(raw):{};
   if(!response.ok){const issues=Array.isArray(result.details)?result.details.map((d:any)=>String(d.issue||'unknown')):[];console.error('paypal_provider_error',response.status,String(result.name||'unknown'),issues.join(','));throw new PayPalProviderError(response.status,issues);}
   return result as T;
 }

@@ -62,7 +62,7 @@ export function getDatabase() {
     migrate(connection, path.join(process.cwd(), 'drizzle'));
     state.touchlineDatabase = new ApplicationDatabase(connection);
   }
-  if(state.touchlineMigrationRevision!==7){migrate(state.touchlineDatabase.connection,path.join(process.cwd(),'drizzle'));state.touchlineMigrationRevision=7;}
+  if(state.touchlineMigrationRevision!==9){migrate(state.touchlineDatabase.connection,path.join(process.cwd(),'drizzle'));state.touchlineMigrationRevision=9;}
   return state.touchlineDatabase;
 }
 

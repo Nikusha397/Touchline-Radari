@@ -1,3 +1,4 @@
+import {networkSubscriptionEvent} from '../../../../lib/network-subscriptions';
 import {agentPayPalEvent} from '../../../../lib/agent-payments';
 import {bodyText,RequestTooLarge} from '../../../../lib/security';
 import {database,noStoreJson} from '../../../../lib/store';
@@ -41,6 +42,7 @@ export async function POST(req:Request){
       }
     }
     await agentPayPalEvent(event);
+    await networkSubscriptionEvent(event);
     await db.prepare('INSERT OR IGNORE INTO payment_events(id,type,processed_at) VALUES (?,?,?)').bind(event.id,event.event_type,new Date().toISOString()).run();
     return noStoreJson({received:true});
   }catch(error){if(error instanceof RequestTooLarge)return noStoreJson({error:'Payload too large.'},413);console.error('paypal_webhook_failed',error instanceof Error?error.name:'unknown');return noStoreJson({error:'Retry webhook delivery.'},503);}

@@ -40,3 +40,24 @@ The old DATA_MAP.md, GITHUB_UPLOAD.md, VALIDATION.md and HANDOVER_MANIFEST.json 
 ## Verification
 
 npm test runs payment validation plus SQLite migration, transactional rollback and private-file tests. npm run build checks TypeScript and builds every App Router route. The local preview includes directory filtering and protected API routes; real login, payments and email require configured providers.
+
+## Community and private inbox (October 2026)
+
+- `/` is the community/news feed; `/directory` retains contact unlocks and email introductions. Legacy root query links and payment callbacks redirect to `/directory`.
+- `/inbox` serves private member conversations. `/subscriptions` manages professional membership.
+- SQLite migrations 0008 and 0009 add anonymous public handles, posts/comments, transactional introduction charges, identity unlocks and subscription records. Back up the persistent database before production rollout.
+- Players read/reply free and spend one introduction credit to reveal a conversation partner. Agents/agencies need active $20 USD monthly membership to read incoming requests and reply. Every new introduction uses one introduction credit. Public posts/comments never reveal real profile names.
+- News is member-contributed with a required HTTPS source link. There is no automatic news scraper or invented starter content.
+- Reports appear at `/admin/network`; administrators can hide reported posts/comments and grant/revoke trial entitlements.
+
+### Subscription activation
+
+Set PAYPAL_NETWORK_PLAN_ID to a plan owned by the configured PayPal merchant. The server validates one unlimited monthly USD 20 cycle, no free trial or setup fee and no added tax before opening checkout. Set PAYMENTS_ENABLED and the existing PayPal credentials/webhook ID. Subscribe the existing signed webhook endpoint `/api/paypal/webhook` to BILLING.SUBSCRIPTION.ACTIVATED, UPDATED, CANCELLED, SUSPENDED, EXPIRED and PAYMENT.SALE.COMPLETED, REFUNDED, REVERSED. Production must verify these in a separate sandbox merchant account first. The application never activates access from the browser return URL alone.
+
+Cancellation stops renewal; confirmed paid access lasts to expiry. Suspensions/reversals fail closed. A network timeout during subscription creation retains the pending claim to prevent duplicate recurring purchases; support must reconcile the provider before clearing it. The checkout remains disabled while provider configuration is absent. This change does not provision a remote PayPal plan or execute a payment.
+
+### Release checks and open items
+
+Run `npm test`, `npx tsc --noEmit`, `npm run lint` and `npm run build`. See `docs/COMMUNITY-REVIEW.md` for security/accessibility verification and remaining release work. Authenticated multi-user browser journeys and real provider renewal/refund/cancellation require test accounts and sandbox payment configuration. Confirm registered seller name/address and obtain jurisdiction-specific legal review before public launch.
+
+The home feed, directory, inbox, profile and membership share `components/community-shell.tsx` and `app/site-shell.css`. Keep global navigation and visual tokens there; directory CV/email-introduction controls belong in its local toolbar.

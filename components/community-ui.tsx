@@ -1,0 +1,9 @@
+'use client';
+import Link from 'next/link';
+import {useEffect,useRef,type ReactNode} from 'react';
+export type Author={id:string;role:string;label:string;verified:boolean};
+export type Session={signedIn:boolean;me:{author:Author;canPost:boolean;canIntroduce:boolean;listed:boolean}|null;credits:number};
+export async function communityApi<T>(action:string,body?:unknown):Promise<T>{const r=await fetch('/api/community?action='+action,{method:body===undefined?'GET':'POST',headers:body===undefined?undefined:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),cache:'no-store'});const data=await r.json();if(!r.ok)throw Error(data.error||'Please try again.');return data;}
+export function AuthorBadge({author}:{author:Author}){return <div className="tl-author"><span className={'tl-avatar tl-avatar-'+author.role} aria-hidden="true">{author.role==='agency'?'AG':author.role==='agent'?'A':'P'}</span><div><strong>{author.label}</strong><small>{author.verified?'Professional role checked':'Community member'} · Identity private</small></div></div>;}
+export function Dialog({title,children,close}:{title:string;children:ReactNode;close:()=>void}){const ref=useRef<HTMLDialogElement>(null);useEffect(()=>{const dialog=ref.current,previous=document.activeElement as HTMLElement;dialog?.showModal();return()=>{dialog?.close();previous?.focus();}},[]);return <dialog ref={ref} className="tl-dialog" aria-label={title} onCancel={close}><header><h2>{title}</h2><button type="button" aria-label="Close dialog" onClick={close}>×</button></header>{children}</dialog>;}
+export function SignInNotice(){return <div className="tl-empty"><h2>Your place in the game.</h2><p>Sign in to post, comment and make introductions.</p><Link className="tl-button" href="/login?next=/">Sign in</Link> <Link className="tl-text-link" href="/signup">Create an account ↗</Link></div>;}

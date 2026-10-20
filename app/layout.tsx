@@ -11,6 +11,8 @@ import "./discovery.css";
 import "./editorial.css";
 import "./shortlist-cart.css";
 import "./network/network.css";
+import "./community.css";
+import "./site-shell.css";
 
 import {StructuredData} from './public-content';
 
@@ -52,16 +54,6 @@ export default function RootLayout({
   return (
 
     <html lang="en">
-
-      <head>
-
-        <link rel="preconnect" href="https://fonts.googleapis.com"/>
-
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous"/>
-
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap"/>
-
-      </head>
 
       <body className="antialiased"><StructuredData data={{'@context':'https://schema.org','@type':'Organization','@id':SITE_URL+'/#organization',name:'TOUCHLINE Radar',url:SITE_URL,logo:SITE_URL+'/press/brand-square.png',email:'contact@touchlineradar.com',sameAs:['https://www.instagram.com/touchline_radar/','https://x.com/TOUCHLINEradar','https://www.tiktok.com/@touchlineradar','https://www.linkedin.com/in/touchline-radar-81910a442/']}}/>{children}</body>
 
